@@ -13,18 +13,18 @@ async function main() {
       name: "Lucas",
       email: "lucas@rigueto.com",
       password,
-      whatsappNumber: "5581999999999", // substituir pelo número real
+      whatsappNumber: "5531994779716",
     },
   });
 
   await prisma.user.upsert({
-    where: { email: "ana@rigueto.com" },
+    where: { email: "lorena@rigueto.com" },
     update: {},
     create: {
-      name: "Ana",
-      email: "ana@rigueto.com",
+      name: "Lorena",
+      email: "lorena@rigueto.com",
       password,
-      whatsappNumber: "5581988888888", // substituir pelo número real
+      whatsappNumber: "5531992095334",
     },
   });
 
