@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String        @id @default(cuid())
+  name           String
+  email          String        @unique
+  password       String
+  avatar         String?
+  whatsappNumber String?       @unique
+  theme          String        @default("system")
+  createdAt      DateTime      @default(now())
+  transactions   Transaction[]
+  goals          Goal[]
+  budgets        Budget[]
+}
+
+model Category {
+  id           String          @id @default(cuid())
+  name         String          @unique
+  icon         String
+  color        String
+  type         CategoryType
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+  BOTH
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  name         String
+  type         AccountType
+  balance      Float         @default(0)
+  color        String        @default("#6366f1")
+  transactions Transaction[]
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CASH
+  CREDIT
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  description String
+  amount      Float
+  type        TransactionType
+  date        DateTime
+  dueDate     DateTime?
+  status      PaymentStatus   @default(PENDING)
+  notes       String?
+  receiptUrl  String?
+  source      String          @default("manual")
+  isRecurring Boolean         @default(false)
+  categoryId  String?
+  category    Category?       @relation(fields: [categoryId], references: [id])
+  accountId   String?
+  account     Account?        @relation(fields: [accountId], references: [id])
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  amount     Float
+  month      Int
+  year       Int
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, categoryId, month, year])
+}
+
+model Goal {
+  id            String     @id @default(cuid())
+  title         String
+  description   String?
+  targetAmount  Float
+  currentAmount Float      @default(0)
+  targetDate    DateTime
+  imageUrl      String?
+  status        GoalStatus @default(ACTIVE)
+  userId        String
+  user          User       @relation(fields: [userId], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model WhatsappPending {
+  id        String   @id @default(cuid())
+  phone     String
+  userId    String
+  messageId String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
