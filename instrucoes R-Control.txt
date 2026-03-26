@@ -1,0 +1,390 @@
+## **PROMPT PARA DESENVOLVIMENTO DO WEB APP FINANCEIRO**
+
+### **VISÃO GERAL**
+Crie um sistema web de gestão financeira pessoal e familiar chamado "FinControl" com interface moderna, intuitiva e visualmente atraente, focado em eliminar barreiras para organização financeira.
+
+---
+
+### **TECNOLOGIAS SUGERIDAS**
+- **Frontend:** React.js ou Next.js com TypeScript
+- **UI Framework:** Tailwind CSS + shadcn/ui
+- **Gráficos:** Recharts ou Chart.js
+- **Backend:** Node.js com Express ou Next.js API Routes
+- **Banco de Dados:** PostgreSQL ou MongoDB
+- **Autenticação:** NextAuth.js ou Clerk
+- **PWA:** Funcionalidade de instalar como app
+
+---
+
+### **ESTRUTURA DE NAVEGAÇÃO (SIDEBAR)**
+Menu lateral fixo à esquerda com fundo azul (#2563EB) e ícones:
+-  Dashboard
+- 💰 Transações
+- 📈 Orçamentos
+- 💳 Cartões/Faturas
+- 🎯 Metas
+- 👨‍‍👧‍👦 Família
+- 💬 WhatsApp Integration
+- ⚙️ Configurações
+- 👤 Perfil
+
+---
+
+### **PÁGINA: DASHBOARD**
+
+**Layout:**
+- Header com saudação personalizada "Olá, [Nome]! 👋" e subtítulo "Bem-vindo de volta! Aqui está um resumo das suas finanças."
+
+**Cards de Resumo (topo - 4 cards em grid):**
+1. **Saldo:** 
+   - Valor atual (ex: R$ 5.153,16)
+   - Saldo total acumulado
+   - Ícone de cifrão + emoji
+   - Badge de variação percentual (+5.5%)
+
+2. **Receitas:**
+   - Total do mês (ex: R$ 5.228,60)
+   - Valor pendente
+   - Ícone de seta para cima
+   - Variação percentual
+
+3. **Despesas:**
+   - Total do mês (ex: R$ 75,44)
+   - Valor pendente
+   - Ícone de seta para baixo
+   - Variação percentual negativa (-24.7%)
+
+4. **Cartões:**
+   - Total em faturas
+   - Ícone de cartão
+
+**Gráfico de Fluxo de Caixa:**
+- Tipo: Area Chart empilhado
+- Período: Seletor Ano/Mês
+- Legenda: Receitas (verde) e Despesas (vermelho/laranja)
+- Tooltip interativo mostrando valores detalhados
+- Toggle para visualizar como: Área, Linha ou Barra
+
+**Transações Recentes:**
+- Lista das últimas 5-10 transações
+- Ícone/avatar, descrição, data, valor, status (Pago/Pendente)
+- Link "Ver todas"
+
+---
+
+### **PÁGINA: TRANSAÇÕES**
+
+**Funcionalidades:**
+- Tabela completa de transações
+- Filtros avançados:
+  - Período (Jan-Dez)
+  - Tipo (Todas/Receitas/Despesas)
+  - Data de pagamento
+  - Contas fixas
+  - Busca textual
+  - Categoria
+  - Conta bancária
+  - Cartão
+  - Usuário (para famílias)
+  - Status (Pago/Pendente)
+
+**Botões de Ação:**
+- + Nova Transação
+- 📄 Faturas
+- ⬆️ Importar (dropdown):
+  - Extrato OFX (importar transações bancárias)
+  - Fatura PDF (importar fatura de cartão)
+  - Fatura CSV (importar planilha de gastos)
+  - Planilha PlannerFin (migrar dados do Excel)
+- ⬇️ Exportar
+
+**Tabela:**
+- Colunas: Data, Descrição, Categoria, Conta, Cartão, Usuário, Valor, Status, Ações
+- Paginação
+- Checkbox para seleção múltipla
+- Cores: Verde para receitas, Vermelho para despesas
+
+---
+
+### **PÁGINA: INTEGRAÇÃO WHATSAPP**
+
+**Layout dividido em 2 colunas:**
+
+**Coluna Esquerda - "Seu Número":**
+- Título: "Cadastre seu número de WhatsApp"
+- Descrição: "Para que nosso agente de IA possa responder suas mensagens e criar transações automaticamente"
+- Input: Número do WhatsApp com DDD
+- Formato correto: DDD + 9 + número (celular)
+- Botão: "Salvar Número"
+- Confirmação: "✓ Número cadastrado: (81) 98249-5165"
+- Toggle: Notificações Push (receber alertas quando transações forem criadas)
+
+**Coluna Direita - "Agente de IA":**
+- Título: "Converse com nosso agente de IA no WhatsApp"
+- Descrição: "Envie suas despesas e receitas por mensagem e elas serão cadastradas automaticamente"
+- Número do Agente: +55 (79) 98113-0359
+- Botão verde: "Abrir WhatsApp"
+
+**Como funciona:**
+- Envie mensagens como "Gastei R$ 50 no mercado"
+- Ou "Recebi R$ 1000 de salário"
+- O agente entende e cria a transação automaticamente
+- Você recebe uma confirmação no WhatsApp
+
+**Exemplos de uso (WhatsApp):**
+- Texto: "Gastei 50 reais no supermercado"
+- Resposta do bot: 
+  ```
+  ✅ Transação criada com sucesso!
+  📝 supermercado
+  💰 R$ 50,00
+  📊 Tipo: Despesa
+  📅 Data: 11/12/2025
+  🏷️ Categoria: Alimentação
+  ✓ Pago
+  ```
+- Áudio: O bot transcreve e cria a transação
+- Imagem: O bot lê o comprovante
+
+---
+
+### **PÁGINA: FAMÍLIA**
+
+**Funcionalidades:**
+- Título: "Gerencie os membros da sua família financeira"
+- Seção "Minha Família" mostrando:
+  - Número de membros
+  - Lista de membros com:
+    - Foto/avatar
+    - Nome
+    - Email
+    - Telefone/WhatsApp
+    - Tipo de vínculo (Esposo(a), Filho(a), etc.)
+    - Status (Vinculado/Não Vinculado)
+
+**Tipos de Vínculo:**
+- **Membro Vinculado:**
+  - Ideal para casais
+  - Compartilham todas as transações, contas e cartões
+  - Cada transação mostra quem criou
+  - Lançamentos independentes
+  - Email e perfil independentes
+  
+- **Membro Não Vinculado:**
+  - Ideal para irmãos e amigos
+  - Lançamentos independentes
+  - Contas e cartões próprios
+  - Total privacidade
+
+**Botão:** "Adicionar Membro"
+
+---
+
+### **PÁGINA: METAS (VISION BOARD)**
+
+**Layout:**
+- Título: "Vision Board - Metas"
+- Subtítulo: "Visualize e acompanhe suas metas financeiras"
+- Busca de metas
+- Grid de cards (estilo quadro visual)
+
+**Cards de Meta:**
+Cada card deve ter:
+- Imagem de fundo relacionada ao objetivo
+- Badge de status (Ativa/Concluída)
+- Título da meta (ex: "Trocar de moto - MT07")
+- Descrição
+- Barra de progresso
+- Valor atual / Valor total (ex: R$ 0,00 de R$ 18.000,00)
+- Valor faltante
+- Data meta
+- Botão "Atualizar"
+
+**Exemplos de Metas:**
+1. **Trocar de moto - MT07**
+   - Progresso: 0%
+   - R$ 0,00 de R$ 18.000,00
+   - Meta: 27/02/2027
+
+2. **Reserva de Emergência**
+   - Status: Concluída ✓
+   - 6 meses dos custos fixos + 20% margem de segurança
+   - Progresso: 100%
+   - R$ 26.000,00 de R$ 26.000,00
+   - Meta: 29/12/2025
+
+3. **Casa Própria - Entrada**
+   - Progresso: 56%
+   - R$ 19.600,00 de R$ 35.000,00
+   - Meta: 30/08/2026
+
+**Propósito:** Manter o usuário motivado e evitar gastos superficiais ao pensar duas vezes antes de comprometer o dinheiro.
+
+---
+
+### **PÁGINA: ORÇAMENTO MENSAL**
+
+**Funcionalidades:**
+- Título: "Orçamento Mensal"
+- Subtítulo: "Acompanhe seu planejamento financeiro e compare com o realizado"
+- Botões: "+ Adicionar Categoria" | "Duplicar Mês Anterior"
+
+**Alerta:**
+- "Existem 2 categoria(s) com gastos não incluídas no orçamento: Internet (R$ 90,00) + Assinaturas (R$ 39,90)"
+
+**Resumo:**
+- Total Planejado: R$ 2.562,33
+- Total Realizado: R$ 2.208,33 (86.2% do planejado)
+- Economia: R$ 354,00
+
+**Tabela "Orçamento por Categoria":**
+Colunas:
+- Categoria (ícone + nome: Aluguel, Compras, Transporte, etc.)
+- Planejado (valor definido)
+- Realizado (valor gasto)
+- Diferença (verde se economizou, vermelho se estourou)
+- Progresso (barra visual)
+- Status:
+  - "Próximo do Limite" (amarelo)
+  - "Dentro do Orçamento" (verde)
+- Ações (editar/excluir)
+
+**Exemplo:**
+- Aluguel: R$ 1.800,00 planejado | R$ 1.750,00 realizado | +R$ 50,00 | 97% | Próximo do Limite
+- Compras: R$ 358,33 planejado | R$ 358,33 realizado | R$ 0,00 | 100% | Próximo do Limite
+- Transporte: R$ 400,00 planejado | R$ 96,00 realizado | +R$ 304,00 | 24% | Dentro do Orçamento
+
+**Propósito:** Definir um orçamento para cada categoria de despesa e se manter dentro dele, revisando semanalmente o planejado vs realizado.
+
+---
+
+### **ELEMENTOS VISUAIS E UI/UX**
+
+**Paleta de Cores:**
+- Primária: Azul (#2563EB)
+- Sucesso/Receita: Verde (#10B981)
+- Perigo/Despesa: Vermelho (#EF4444) / Laranja (#F97316)
+- Alerta: Amarelo (#F59E0B)
+- Fundo: Cinza claro (#F3F4F6)
+- Cards: Branco (#FFFFFF)
+- Texto: Cinza escuro (#1F2937)
+
+**Tipografia:**
+- Fonte moderna e legível (Inter ou Poppins)
+- Títulos: Bold
+- Valores monetários: Destaque com fonte maior
+
+**Componentes:**
+- Cards com sombra suave (shadow-lg)
+- Bordas arredondadas (rounded-xl)
+- Hover effects sutis
+- Transições suaves
+- Ícones: Lucide React ou Heroicons
+- Emojis para tornar a interface mais amigável
+
+**Responsividade:**
+- Mobile-first
+- Sidebar colapsável em mobile
+- Grid adaptativo (1 coluna mobile, 2-4 colunas desktop)
+- Tabelas com scroll horizontal em telas pequenas
+
+---
+
+### **FUNCIONALIDADES TÉCNICAS**
+
+**Autenticação:**
+- Login/Register com email e senha
+- OAuth (Google, Facebook)
+- Recuperação de senha
+- Perfil de usuário com foto
+
+**Multi-tenant/Família:**
+- Suporte a múltiplos usuários
+- Compartilhamento de transações entre membros
+- Permissões e tipos de vínculo
+- Identificação de quem criou cada transação
+
+**Importação de Dados:**
+- Parser de arquivos OFX
+- Leitura de PDF de faturas (OCR ou estrutura padrão)
+- Importação de CSV/Excel
+- Mapeamento automático de categorias
+- Detecção de duplicatas
+
+**Integração WhatsApp:**
+- API de WhatsApp Business
+- Processamento de linguagem natural (NLP) para entender mensagens
+- Transcrição de áudio (speech-to-text)
+- Leitura de imagens (OCR para comprovantes)
+- Confirmação automática de transações criadas
+
+**Relatórios e Gráficos:**
+- Gráficos interativos
+- Exportação de relatórios em PDF
+- Comparativos mês a mês
+- Projeções financeiras
+
+**Notificações:**
+- Push notifications
+- Email de alertas
+- Lembretes de contas a pagar
+- Alertas de orçamento estourado
+
+**Segurança:**
+- Criptografia de dados sensíveis
+- HTTPS obrigatório
+- Backup automático
+- LGPD compliance
+
+---
+
+### **FLUXO DE CADASTRO RÁPIDO**
+1. Landing page explicativa
+2. Cadastro simplificado (email, senha, nome)
+3. Onboarding/tutorial interativo
+4. Configuração inicial:
+   - Definir moeda (BRL - Real)
+   - Cadastrar contas bancárias
+   - Definir categorias de gastos
+   - (Opcional) Configurar WhatsApp
+   - (Opcional) Adicionar membro da família
+
+---
+
+### **DIFERENCIAIS COMPETITIVOS**
+- ✅ Interface visual e intuitiva (não é planilha chata)
+- ✅ Funciona como app (PWA)
+- ✅ Integração com WhatsApp (não precisa abrir o app)
+- ✅ Agente de IA para registro automático
+- ✅ Importação de dados (não precisa digitar tudo)
+- ✅ Gestão familiar multi-usuário
+- ✅ Vision Board motivacional
+- ✅ Orçamento por categoria com alertas
+- ✅ Categorização automática via IA
+
+---
+
+### **MODELO DE NEGÓCIO (Sugestão)**
+- Freemium: Plano gratuito com limitações
+- Premium: R$ 19,90/mês ou R$ 199,90/ano
+- Família: R$ 29,90/mês (até 5 membros)
+- Promoção de lançamento: 50% de desconto
+
+---
+
+### **ENTREGÁVEIS ESPERADOS**
+1. [ ] Protótipo de alta fidelidade (Figma)
+2. [ ] Sistema funcional em produção
+3. [ ] Documentação técnica
+4. [ ] Manual do usuário
+5. [ ] Deploy configurado
+6. [ ] Testes automatizados
+7. [ ] Integração com gateway de pagamento
+
+---
+
+**NOTA FINAL:** O sistema deve ser extremamente simples de usar, eliminando todas as desculpas comuns para não organizar as finanças (chatice, tempo, complexidade, dependência de terceiros). A experiência deve ser fluida, visual e motivadora.
+
+---
+
+Este prompt está completo o suficiente para um desenvolvedor ou equipe de desenvolvimento criar um sistema similar ao PlannerFin. Você pode ajustar conforme necessidades específicas!
