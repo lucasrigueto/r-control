@@ -37,11 +37,11 @@ export function CashflowChart({ data }: Props) {
           }
         />
         <Tooltip
-          formatter={(value: number) =>
+          formatter={(value) =>
             new Intl.NumberFormat("pt-BR", {
               style: "currency",
               currency: "BRL",
-            }).format(value)
+            }).format(Number(value))
           }
         />
         <Legend />
