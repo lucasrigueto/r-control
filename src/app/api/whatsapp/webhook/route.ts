@@ -18,13 +18,11 @@ function formatBRL(value: number): string {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  console.log("[webhook] recebido:", JSON.stringify(body).slice(0, 300));
-
   // Only process incoming messages
   const event = body.event;
   if (event !== "messages.upsert") return NextResponse.json({ ok: true });
 
-  const message = body.data?.messages?.[0];
+  const message = body.data;
   if (!message || message.key?.fromMe) return NextResponse.json({ ok: true });
 
   const phone =
