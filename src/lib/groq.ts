@@ -1,6 +1,10 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+let _groq: Groq | null = null;
+function getGroq(): Groq {
+  if (!_groq) _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  return _groq;
+}
 
 export interface ParsedTransaction {
   description: string;
@@ -17,7 +21,7 @@ export async function parseFinancialMessage(
   const today = new Date().toISOString().split("T")[0];
 
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroq().chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [
         {
@@ -56,7 +60,7 @@ export async function transcribeAudio(
   try {
     const file = new File([audioBuffer.buffer as ArrayBuffer], "audio.ogg", { type: mimeType });
 
-    const transcription = await groq.audio.transcriptions.create({
+    const transcription = await getGroq().audio.transcriptions.create({
       file,
       model: "whisper-large-v3-turbo",
       language: "pt",
@@ -74,7 +78,7 @@ export async function analyzeReceiptImage(
   const today = new Date().toISOString().split("T")[0];
 
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroq().chat.completions.create({
       model: "llama-3.2-11b-vision-preview",
       messages: [
         {
