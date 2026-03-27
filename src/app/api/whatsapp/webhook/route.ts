@@ -18,26 +18,30 @@ function formatBRL(value: number): string {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  // Only process incoming messages
   const event = body.event;
+  console.log("[wh] event:", event);
   if (event !== "messages.upsert") return NextResponse.json({ ok: true });
 
   const message = body.data;
-  if (!message || message.key?.fromMe) return NextResponse.json({ ok: true });
+  const fromMe = message?.key?.fromMe;
+  console.log("[wh] fromMe:", fromMe, "message:", !!message);
+  if (!message || fromMe) return NextResponse.json({ ok: true });
 
   const phone =
     message.key?.remoteJid?.replace("@s.whatsapp.net", "") ?? "";
   const messageId = message.key?.id ?? "";
+  console.log("[wh] phone:", phone, "msgId:", messageId);
 
-  // Identify user by phone number
   const user = await prisma.user.findFirst({
     where: { whatsappNumber: phone },
   });
+  console.log("[wh] user:", user?.name ?? "NOT FOUND");
   if (!user) return NextResponse.json({ ok: true });
 
   const msgType = message.message;
   const textContent =
     msgType?.conversation || msgType?.extendedTextMessage?.text || "";
+  console.log("[wh] msgType keys:", Object.keys(msgType ?? {}), "text:", textContent.slice(0, 50));
 
   try {
     // Check for pending confirmation
