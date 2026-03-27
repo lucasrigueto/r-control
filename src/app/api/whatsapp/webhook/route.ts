@@ -18,6 +18,7 @@ function formatBRL(value: number): string {
 
 export async function POST(req: Request) {
   const body = await req.json();
+  console.log("[webhook] recebido:", JSON.stringify(body).slice(0, 300));
 
   // Only process incoming messages
   const event = body.event;
