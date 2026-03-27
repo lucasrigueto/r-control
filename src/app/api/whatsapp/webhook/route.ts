@@ -17,12 +17,6 @@ function formatBRL(value: number): string {
 }
 
 export async function POST(req: Request) {
-  // Verify webhook secret
-  const secret = req.headers.get("x-webhook-secret");
-  if (secret !== process.env.WHATSAPP_WEBHOOK_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const body = await req.json();
 
   // Only process incoming messages
