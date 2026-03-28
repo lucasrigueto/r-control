@@ -32,10 +32,19 @@ export async function POST(req: Request) {
   const messageId = message.key?.id ?? "";
   console.log("[wh] phone:", phone, "msgId:", messageId);
 
+  // Tenta os dois formatos: com e sem o 9 extra do celular brasileiro
+  // Ex: 553194779716 (12 díg) ↔ 5531994779716 (13 díg)
+  const altPhone =
+    phone.length === 12 && phone.startsWith("55")
+      ? phone.slice(0, 4) + "9" + phone.slice(4)
+      : phone.length === 13 && phone.startsWith("55")
+      ? phone.slice(0, 4) + phone.slice(5)
+      : phone;
+
   const user = await prisma.user.findFirst({
-    where: { whatsappNumber: phone },
+    where: { whatsappNumber: { in: [phone, altPhone] } },
   });
-  console.log("[wh] user:", user?.name ?? "NOT FOUND");
+  console.log("[wh] user:", user?.name ?? "NOT FOUND", "alt:", altPhone);
   if (!user) return NextResponse.json({ ok: true });
 
   const msgType = message.message;
