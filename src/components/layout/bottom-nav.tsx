@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ArrowLeftRight, Target, Wallet, CreditCard, MessageCircle } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, Target, CreditCard, MessageCircle } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Início", icon: LayoutDashboard },
