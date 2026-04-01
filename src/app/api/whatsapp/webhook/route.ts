@@ -209,9 +209,13 @@ export async function POST(req: Request) {
         }
       }
     } else if (msgType?.imageMessage) {
+      console.log("[wh] imageMessage detected, downloading...");
       const media = await downloadMedia(messageId);
       if (media) {
-        parsed = await analyzeReceiptImage(media.buffer.toString("base64"));
+        console.log("[wh] media downloaded, mimeType:", media.mimeType, "size:", media.buffer.length);
+        parsed = await analyzeReceiptImage(media.buffer.toString("base64"), media.mimeType);
+      } else {
+        console.log("[wh] downloadMedia returned null");
       }
     }
 

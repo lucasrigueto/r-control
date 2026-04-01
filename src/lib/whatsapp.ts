@@ -32,12 +32,17 @@ export async function downloadMedia(
       }
     );
     const data = await res.json();
-    if (!data.base64) return null;
+    console.log("[downloadMedia] status:", res.status, "keys:", Object.keys(data));
+    if (!data.base64) {
+      console.log("[downloadMedia] no base64 in response:", JSON.stringify(data).slice(0, 200));
+      return null;
+    }
     return {
       buffer: Buffer.from(data.base64, "base64"),
-      mimeType: data.mimetype ?? "application/octet-stream",
+      mimeType: data.mimetype ?? "image/jpeg",
     };
-  } catch {
+  } catch (err) {
+    console.error("[downloadMedia] error:", err);
     return null;
   }
 }

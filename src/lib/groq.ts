@@ -73,20 +73,24 @@ export async function transcribeAudio(
 }
 
 export async function analyzeReceiptImage(
-  imageBase64: string
+  imageBase64: string,
+  mimeType: string = "image/jpeg"
 ): Promise<ParsedTransaction | null> {
   const today = new Date().toISOString().split("T")[0];
 
+  // Groq vision supports jpeg/png/webp — normalize webp to jpeg if needed
+  const supportedMime = mimeType.includes("webp") ? "image/jpeg" : mimeType;
+
   try {
     const completion = await getGroq().chat.completions.create({
-      model: "llama-3.2-11b-vision-preview",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
         {
           role: "user",
           content: [
             {
               type: "image_url",
-              image_url: { url: `data:image/jpeg;base64,${imageBase64}` },
+              image_url: { url: `data:${supportedMime};base64,${imageBase64}` },
             },
             {
               type: "text",
@@ -102,11 +106,13 @@ Se não for um comprovante financeiro, retorne: {"error": "not_a_receipt"}`,
     });
 
     const content = completion.choices[0].message.content ?? "";
+    console.log("[analyzeReceiptImage] raw response:", content.slice(0, 300));
     const clean = content.replace(/```json\n?|\n?```/g, "").trim();
     const json = JSON.parse(clean);
     if (json.error) return null;
     return json as ParsedTransaction;
-  } catch {
+  } catch (err) {
+    console.error("[analyzeReceiptImage] error:", err);
     return null;
   }
 }
