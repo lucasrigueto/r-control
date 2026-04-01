@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -54,9 +53,21 @@ export default function CartoesPage() {
 
   async function load() {
     setLoading(true);
-    const data = await fetch("/api/credit-cards").then((r) => r.json());
-    setCards(data);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/credit-cards");
+      if (!res.ok) {
+        console.error("[cartoes] API error:", res.status, await res.text());
+        setCards([]);
+        return;
+      }
+      const data = await res.json();
+      setCards(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("[cartoes] fetch error:", err);
+      setCards([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, []);
