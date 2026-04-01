@@ -90,6 +90,109 @@ export async function POST(req: Request) {
       }
     }
 
+    // Handle slash commands
+    if (textContent.startsWith("/")) {
+      const cmd = textContent.trim().toLowerCase();
+
+      if (cmd === "/ajuda") {
+        await sendWhatsAppMessage(
+          phone,
+          `📱 *R-Control — Comandos disponíveis*\n\n` +
+          `*Registrar transações:*\n` +
+          `• Envie texto, áudio ou foto de comprovante\n` +
+          `• Ex: _"Gastei R$ 50 no mercado"_\n` +
+          `• Ex: _"Recebi R$ 2.000 de salário"_\n\n` +
+          `*Confirmar lançamento:*\n` +
+          `• *1* — Confirmar ✅\n` +
+          `• *2* — Cancelar ❌\n\n` +
+          `*Consultas:*\n` +
+          `• */saldo* — Resumo do mês atual\n` +
+          `• */gastos* — Top categorias de despesa\n` +
+          `• */ajuda* — Esta mensagem`
+        );
+        return NextResponse.json({ ok: true });
+      }
+
+      if (cmd === "/saldo") {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        const [incomeAgg, expenseAgg] = await Promise.all([
+          prisma.transaction.aggregate({
+            where: { userId: user.id, type: "INCOME", status: "PAID", date: { gte: start, lte: end } },
+            _sum: { amount: true },
+          }),
+          prisma.transaction.aggregate({
+            where: { userId: user.id, type: "EXPENSE", status: "PAID", date: { gte: start, lte: end } },
+            _sum: { amount: true },
+          }),
+        ]);
+
+        const income = incomeAgg._sum.amount ?? 0;
+        const expense = expenseAgg._sum.amount ?? 0;
+        const balance = income - expense;
+        const month = now.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+
+        await sendWhatsAppMessage(
+          phone,
+          `📊 *Resumo de ${month}*\n\n` +
+          `💚 Receitas: ${formatBRL(income)}\n` +
+          `🔴 Despesas: ${formatBRL(expense)}\n` +
+          `─────────────────\n` +
+          `${balance >= 0 ? "✅" : "⚠️"} Saldo: *${formatBRL(balance)}*`
+        );
+        return NextResponse.json({ ok: true });
+      }
+
+      if (cmd === "/gastos") {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        const transactions = await prisma.transaction.findMany({
+          where: { userId: user.id, type: "EXPENSE", status: "PAID", date: { gte: start, lte: end } },
+          include: { category: true },
+        });
+
+        const byCategory: Record<string, { name: string; icon: string; total: number }> = {};
+        for (const t of transactions) {
+          const key = t.categoryId ?? "__sem_categoria__";
+          if (!byCategory[key]) {
+            byCategory[key] = { name: t.category?.name ?? "Sem categoria", icon: t.category?.icon ?? "📦", total: 0 };
+          }
+          byCategory[key].total += t.amount;
+        }
+
+        const sorted = Object.values(byCategory).sort((a, b) => b.total - a.total).slice(0, 5);
+        const totalExpense = transactions.reduce((s, t) => s + t.amount, 0);
+        const month = now.toLocaleString("pt-BR", { month: "long" });
+
+        if (sorted.length === 0) {
+          await sendWhatsAppMessage(phone, `Nenhuma despesa registrada em ${month}.`);
+          return NextResponse.json({ ok: true });
+        }
+
+        const lines = sorted
+          .map((c, i) => {
+            const pct = totalExpense > 0 ? Math.round((c.total / totalExpense) * 100) : 0;
+            return `${i + 1}. ${c.icon} ${c.name}: ${formatBRL(c.total)} (${pct}%)`;
+          })
+          .join("\n");
+
+        await sendWhatsAppMessage(
+          phone,
+          `🏷️ *Top gastos de ${month}*\n\n${lines}\n\n` +
+          `Total: ${formatBRL(totalExpense)}`
+        );
+        return NextResponse.json({ ok: true });
+      }
+
+      // Unknown command
+      await sendWhatsAppMessage(phone, `Comando não reconhecido. Envie */ajuda* para ver os comandos disponíveis.`);
+      return NextResponse.json({ ok: true });
+    }
+
     // Parse new message
     let parsed = null;
 
