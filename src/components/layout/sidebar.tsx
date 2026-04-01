@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ArrowLeftRight, Target, Wallet, MessageCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, Target, Wallet, CreditCard, MessageCircle, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/transacoes", label: "Transações", icon: ArrowLeftRight },
   { href: "/orcamento", label: "Orçamento", icon: Wallet },
   { href: "/metas", label: "Metas", icon: Target },
+  { href: "/cartoes", label: "Cartões", icon: CreditCard },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
 ];
 

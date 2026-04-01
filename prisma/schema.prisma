@@ -8,17 +8,19 @@ datasource db {
 }
 
 model User {
-  id             String        @id @default(cuid())
-  name           String
-  email          String        @unique
-  password       String
-  avatar         String?
-  whatsappNumber String?       @unique
-  theme          String        @default("system")
-  createdAt      DateTime      @default(now())
-  transactions   Transaction[]
-  goals          Goal[]
-  budgets        Budget[]
+  id                  String        @id @default(cuid())
+  name                String
+  email               String        @unique
+  password            String
+  avatar              String?
+  whatsappNumber      String?       @unique
+  theme               String        @default("system")
+  defaultCreditCardId String?
+  createdAt           DateTime      @default(now())
+  transactions        Transaction[]
+  goals               Goal[]
+  budgets             Budget[]
+  creditCards         CreditCard[]
 }
 
 model Category {
@@ -54,25 +56,27 @@ enum AccountType {
 }
 
 model Transaction {
-  id          String          @id @default(cuid())
-  description String
-  amount      Float
-  type        TransactionType
-  date        DateTime
-  dueDate     DateTime?
-  status      PaymentStatus   @default(PENDING)
-  notes       String?
-  receiptUrl  String?
-  source      String          @default("manual")
-  isRecurring Boolean         @default(false)
-  categoryId  String?
-  category    Category?       @relation(fields: [categoryId], references: [id])
-  accountId   String?
-  account     Account?        @relation(fields: [accountId], references: [id])
-  userId      String
-  user        User            @relation(fields: [userId], references: [id])
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id             String          @id @default(cuid())
+  description    String
+  amount         Float
+  type           TransactionType
+  date           DateTime
+  dueDate        DateTime?
+  status         PaymentStatus   @default(PENDING)
+  notes          String?
+  receiptUrl     String?
+  source         String          @default("manual")
+  isRecurring    Boolean         @default(false)
+  categoryId     String?
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  accountId      String?
+  account        Account?        @relation(fields: [accountId], references: [id])
+  creditCardId   String?
+  creditCard     CreditCard?     @relation(fields: [creditCardId], references: [id])
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 enum TransactionType {
@@ -129,4 +133,18 @@ model WhatsappPending {
   data      Json
   createdAt DateTime @default(now())
   expiresAt DateTime
+}
+
+model CreditCard {
+  id           String        @id @default(cuid())
+  name         String
+  lastDigits   String?
+  limit        Float
+  closingDay   Int
+  dueDay       Int
+  color        String        @default("#6366f1")
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
 }
