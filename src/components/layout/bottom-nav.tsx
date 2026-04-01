@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ArrowLeftRight, Target, Wallet } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, Target, Wallet, MessageCircle } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Início", icon: LayoutDashboard },
   { href: "/transacoes", label: "Transações", icon: ArrowLeftRight },
   { href: "/orcamento", label: "Orçamento", icon: Wallet },
   { href: "/metas", label: "Metas", icon: Target },
+  { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
 ];
 
 export function BottomNav() {

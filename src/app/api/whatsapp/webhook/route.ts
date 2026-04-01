@@ -141,7 +141,7 @@ export async function POST(req: Request) {
 
     await sendWhatsAppMessage(
       phone,
-      `Confirmar lançamento?\n\n📝 *${parsed.description}*\n💰 ${formatBRL(parsed.amount)}\n${typeLabel}\n📅 ${parsed.date}\n🏷️ ${category?.name ?? parsed.category}\n\nResponda:\n✅ *SIM* para confirmar\n❌ *NÃO* para cancelar`
+      `Confirmar lançamento?\n\n📝 *${parsed.description}*\n💰 ${formatBRL(parsed.amount)}\n${typeLabel}\n📅 ${parsed.date}\n🏷️ ${category?.name ?? parsed.category}\n\nResponda:\n*1* para confirmar ✅\n*2* para cancelar ❌`
     );
   } catch (err) {
     console.error("WhatsApp webhook error:", err);
