@@ -183,16 +183,22 @@ export default function PerfilPage() {
                   <p className="text-sm font-medium">{profile.whatsappNumber}</p>
                   <p className="text-xs text-green-600">Conectado</p>
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/whatsapp">Gerenciar</Link>
-                </Button>
+                <Link
+                  href="/whatsapp"
+                  className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Gerenciar
+                </Link>
               </div>
             ) : (
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">Nenhum número cadastrado</p>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/whatsapp">Conectar</Link>
-                </Button>
+                <Link
+                  href="/whatsapp"
+                  className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Conectar
+                </Link>
               </div>
             )}
           </CardContent>
