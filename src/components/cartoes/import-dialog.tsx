@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -197,19 +197,22 @@ export function ImportDialog({
     setImportError("");
   }, []);
 
+  // Fetch categories whenever the dialog opens
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) =>
+        setCategories(
+          Array.isArray(data) ? data.filter((c: Category) => c.type !== "INCOME") : []
+        )
+      )
+      .catch(() => {});
+  }, [open]);
+
   const handleOpenChange = useCallback(
     (val: boolean) => {
       if (!val) reset();
-      if (val) {
-        fetch("/api/categories")
-          .then((r) => r.json())
-          .then((data) =>
-            setCategories(
-              Array.isArray(data) ? data.filter((c: Category) => c.type !== "INCOME") : []
-            )
-          )
-          .catch(() => {});
-      }
       onOpenChange(val);
     },
     [onOpenChange, reset]
@@ -432,7 +435,7 @@ export function ImportDialog({
         )}
 
         {/* ── Step 3: Done ── */}
-        {step === "done" && result && (
+        {step === "done" && (
           <div className="flex flex-col items-center justify-center py-10 gap-4 text-center">
             <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <Check size={28} className="text-green-600" />
@@ -440,9 +443,9 @@ export function ImportDialog({
             <div>
               <p className="font-semibold text-lg">Importação concluída!</p>
               <p className="text-muted-foreground text-sm mt-1">
-                {result.created} transaç{result.created === 1 ? "ão importada" : "ões importadas"}
-                {result.skipped > 0 &&
-                  ` · ${result.skipped} ignorada${result.skipped === 1 ? "" : "s"} (duplicadas)`}
+                {result?.created ?? 0} transaç{(result?.created ?? 0) === 1 ? "ão importada" : "ões importadas"}
+                {(result?.skipped ?? 0) > 0 &&
+                  ` · ${result!.skipped} ignorada${result!.skipped === 1 ? "" : "s"} (duplicadas)`}
               </p>
             </div>
             <Button onClick={() => handleOpenChange(false)}>Fechar</Button>

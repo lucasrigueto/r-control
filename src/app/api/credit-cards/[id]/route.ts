@@ -2,20 +2,22 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getBillingCycle } from "@/lib/billing";
+import { getBillingCycleAtOffset } from "@/lib/billing";
 
 async function getCard(id: string, userId: string) {
   return prisma.creditCard.findFirst({ where: { id, userId } });
 }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const card = await getCard(params.id, session.user.id);
   if (!card) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { start, end } = getBillingCycle(card.closingDay);
+  const { searchParams } = new URL(req.url);
+  const offset = Math.max(-24, Math.min(0, parseInt(searchParams.get("offset") ?? "0") || 0));
+  const { start, end } = getBillingCycleAtOffset(card.closingDay, offset);
 
   const transactions = await prisma.transaction.findMany({
     where: { creditCardId: card.id, date: { gte: start, lte: end } },

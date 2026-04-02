@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, CreditCard as CreditCardIcon, ChevronRight, Upload } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Pencil, Trash2, CreditCard as CreditCardIcon, ChevronRight, ChevronLeft, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,6 +79,8 @@ export default function CartoesPage() {
   const [sheetCard, setSheetCard] = useState<CardDetail | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetCardId, setSheetCardId] = useState<string | null>(null);
+  const [cycleOffset, setCycleOffset] = useState(0);
 
   // Import dialog
   const [importCard, setImportCard] = useState<{ id: string; name: string } | null>(null);
@@ -126,17 +128,28 @@ export default function CartoesPage() {
     setImportOpen(true);
   }
 
-  async function openDetail(card: CreditCardData) {
+  function openDetail(card: CreditCardData) {
+    setSheetCardId(card.id);
+    setCycleOffset(0);
     setSheetOpen(true);
+  }
+
+  const fetchSheetCard = useCallback(async (id: string, offset: number) => {
     setSheetLoading(true);
     setSheetCard(null);
     try {
-      const res = await fetch(`/api/credit-cards/${card.id}`);
+      const res = await fetch(`/api/credit-cards/${id}?offset=${offset}`);
       if (res.ok) setSheetCard(await res.json());
     } finally {
       setSheetLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    if (sheetOpen && sheetCardId) {
+      fetchSheetCard(sheetCardId, cycleOffset);
+    }
+  }, [sheetOpen, sheetCardId, cycleOffset, fetchSheetCard]);
 
   async function handleSave() {
     setError("");
@@ -439,16 +452,33 @@ export default function CartoesPage() {
               <SheetHeader className="mb-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
                     style={{ backgroundColor: sheetCard.color }}
                   >
                     {sheetCard.name.slice(0, 2).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <SheetTitle>{sheetCard.name}</SheetTitle>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCycleLabel(sheetCard.closingDay, new Date(sheetCard.cycleStart))}
-                    </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <button
+                        onClick={() => setCycleOffset((o) => o - 1)}
+                        className="p-0.5 rounded hover:bg-muted transition-colors"
+                        title="Ciclo anterior"
+                      >
+                        <ChevronLeft size={14} className="text-muted-foreground" />
+                      </button>
+                      <p className="text-xs text-muted-foreground">
+                        {formatCycleLabel(sheetCard.closingDay, new Date(sheetCard.cycleStart))}
+                      </p>
+                      <button
+                        onClick={() => setCycleOffset((o) => o + 1)}
+                        disabled={cycleOffset >= 0}
+                        className="p-0.5 rounded hover:bg-muted transition-colors disabled:opacity-30"
+                        title="Próximo ciclo"
+                      >
+                        <ChevronRight size={14} className="text-muted-foreground" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </SheetHeader>

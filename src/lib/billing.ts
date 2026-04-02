@@ -33,6 +33,24 @@ export function getBillingCycle(
   return { start: cycleStart, end: cycleEnd };
 }
 
+/**
+ * Returns the billing cycle at a given offset from the current one.
+ * offset=0  → current cycle
+ * offset=-1 → previous cycle
+ */
+export function getBillingCycleAtOffset(
+  closingDay: number,
+  offset: number = 0,
+  referenceDate: Date = new Date()
+): { start: Date; end: Date } {
+  let cycle = getBillingCycle(closingDay, referenceDate);
+  for (let i = 0; i > offset; i--) {
+    const prevRef = new Date(cycle.start.getTime() - 24 * 60 * 60 * 1000);
+    cycle = getBillingCycle(closingDay, prevRef);
+  }
+  return cycle;
+}
+
 export function formatCycleLabel(closingDay: number, referenceDate: Date = new Date()): string {
   const { start, end } = getBillingCycle(closingDay, referenceDate);
   const fmt = (d: Date) =>
