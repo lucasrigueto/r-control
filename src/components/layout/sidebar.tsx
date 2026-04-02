@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ArrowLeftRight, Target, Wallet, CreditCard, MessageCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, Target, Wallet, CreditCard, MessageCircle, Settings, User, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const navItems = [
@@ -12,6 +12,11 @@ const navItems = [
   { href: "/metas", label: "Metas", icon: Target },
   { href: "/cartoes", label: "Cartões", icon: CreditCard },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle },
+];
+
+const bottomItems = [
+  { href: "/configuracoes", label: "Configurações", icon: Settings },
+  { href: "/perfil", label: "Perfil", icon: User },
 ];
 
 export function Sidebar() {
@@ -42,13 +47,30 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <button
-        onClick={() => signOut({ callbackUrl: "/login" })}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
-      >
-        <LogOut size={18} />
-        Sair
-      </button>
+      <div className="space-y-1 border-t border-white/10 pt-3">
+        {bottomItems.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium",
+              pathname === href
+                ? "bg-white/20 text-white"
+                : "text-white/70 hover:bg-white/10 hover:text-white"
+            )}
+          >
+            <Icon size={18} />
+            {label}
+          </Link>
+        ))}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+        >
+          <LogOut size={18} />
+          Sair
+        </button>
+      </div>
     </aside>
   );
 }

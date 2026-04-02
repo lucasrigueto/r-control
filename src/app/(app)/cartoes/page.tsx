@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, CreditCard as CreditCardIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, CreditCard as CreditCardIcon, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Header } from "@/components/layout/header";
-import { formatCycleLabel } from "@/lib/billing";
+import { getBillingCycle, formatCycleLabel } from "@/lib/billing";
 
 interface CreditCardData {
   id: string;
@@ -28,6 +34,19 @@ interface CreditCardData {
   cycleEnd: string;
 }
 
+interface TransactionItem {
+  id: string;
+  description: string;
+  amount: number;
+  type: string;
+  date: string;
+  category: { name: string; icon: string; color: string } | null;
+}
+
+interface CardDetail extends CreditCardData {
+  transactions: TransactionItem[];
+}
+
 const CARD_COLORS = [
   "#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
   "#f97316", "#eab308", "#22c55e", "#14b8a6",
@@ -36,6 +55,10 @@ const CARD_COLORS = [
 
 function formatBRL(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
 const emptyForm = {
@@ -51,19 +74,19 @@ export default function CartoesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // Drill-down sheet
+  const [sheetCard, setSheetCard] = useState<CardDetail | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetLoading, setSheetLoading] = useState(false);
+
   async function load() {
     setLoading(true);
     try {
       const res = await fetch("/api/credit-cards");
-      if (!res.ok) {
-        console.error("[cartoes] API error:", res.status, await res.text());
-        setCards([]);
-        return;
-      }
+      if (!res.ok) { setCards([]); return; }
       const data = await res.json();
       setCards(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("[cartoes] fetch error:", err);
+    } catch {
       setCards([]);
     } finally {
       setLoading(false);
@@ -91,6 +114,18 @@ export default function CartoesPage() {
     });
     setError("");
     setDialogOpen(true);
+  }
+
+  async function openDetail(card: CreditCardData) {
+    setSheetOpen(true);
+    setSheetLoading(true);
+    setSheetCard(null);
+    try {
+      const res = await fetch(`/api/credit-cards/${card.id}`);
+      if (res.ok) setSheetCard(await res.json());
+    } finally {
+      setSheetLoading(false);
+    }
   }
 
   async function handleSave() {
@@ -130,6 +165,8 @@ export default function CartoesPage() {
     return "bg-green-500";
   }
 
+  const totalSpent = cards.reduce((s, c) => s + c.cycleSpent, 0);
+
   return (
     <div>
       <Header title="Cartões de Crédito" />
@@ -138,7 +175,11 @@ export default function CartoesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-semibold">Seus cartões</h2>
-            <p className="text-sm text-muted-foreground">Acompanhe o gasto de cada cartão no ciclo atual</p>
+            <p className="text-sm text-muted-foreground">
+              {cards.length > 0
+                ? `Total em aberto: ${formatBRL(totalSpent)}`
+                : "Acompanhe o gasto de cada cartão no ciclo atual"}
+            </p>
           </div>
           <Button onClick={openCreate}>
             <Plus size={16} className="mr-2" />
@@ -167,7 +208,6 @@ export default function CartoesPage() {
 
               return (
                 <Card key={card.id} className="overflow-hidden">
-                  {/* Color bar */}
                   <div className="h-1.5 w-full" style={{ backgroundColor: card.color }} />
 
                   <CardHeader className="pb-2 pt-4">
@@ -190,7 +230,12 @@ export default function CartoesPage() {
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(card)}>
                           <Pencil size={13} />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(card.id, card.name)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(card.id, card.name)}
+                        >
                           <Trash2 size={13} />
                         </Button>
                       </div>
@@ -198,7 +243,6 @@ export default function CartoesPage() {
                   </CardHeader>
 
                   <CardContent className="space-y-3">
-                    {/* Spending progress */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Gasto no ciclo</span>
@@ -216,7 +260,6 @@ export default function CartoesPage() {
                       </div>
                     </div>
 
-                    {/* Available + status */}
                     <div className="flex items-center justify-between pt-1 border-t">
                       <div>
                         <p className="text-xs text-muted-foreground">Disponível</p>
@@ -230,7 +273,6 @@ export default function CartoesPage() {
                       </div>
                     </div>
 
-                    {/* Cycle label */}
                     <div className="flex justify-between items-center">
                       <Badge variant="outline" className="text-xs font-normal">{cycleLabel}</Badge>
                       {pct >= 85 && (
@@ -239,6 +281,16 @@ export default function CartoesPage() {
                         </Badge>
                       )}
                     </div>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-between text-xs h-8 mt-1"
+                      onClick={() => openDetail(card)}
+                    >
+                      Ver fatura do ciclo
+                      <ChevronRight size={14} />
+                    </Button>
                   </CardContent>
                 </Card>
               );
@@ -310,7 +362,6 @@ export default function CartoesPage() {
               </div>
             </div>
 
-            {/* Color picker */}
             <div className="space-y-1.5">
               <Label>Cor</Label>
               <div className="flex flex-wrap gap-2">
@@ -343,6 +394,93 @@ export default function CartoesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Fatura drill-down Sheet */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          {sheetLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-sm text-muted-foreground">Carregando fatura...</p>
+            </div>
+          ) : sheetCard ? (
+            <>
+              <SheetHeader className="mb-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                    style={{ backgroundColor: sheetCard.color }}
+                  >
+                    {sheetCard.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <SheetTitle>{sheetCard.name}</SheetTitle>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCycleLabel(sheetCard.closingDay, new Date(sheetCard.cycleStart))}
+                    </p>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              {/* Summary */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <Card>
+                  <CardContent className="p-3">
+                    <p className="text-xs text-muted-foreground">Gasto no ciclo</p>
+                    <p className="text-lg font-semibold">{formatBRL(sheetCard.cycleSpent)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {Math.min(Math.round((sheetCard.cycleSpent / sheetCard.limit) * 100), 100)}% do limite
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-3">
+                    <p className="text-xs text-muted-foreground">Disponível</p>
+                    <p className={`text-lg font-semibold ${sheetCard.limit - sheetCard.cycleSpent < 0 ? "text-destructive" : "text-green-600"}`}>
+                      {formatBRL(Math.max(sheetCard.limit - sheetCard.cycleSpent, 0))}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Vence dia {sheetCard.dueDay}</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Transactions list */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium mb-3">
+                  Lançamentos ({sheetCard.transactions.length})
+                </p>
+                {sheetCard.transactions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum lançamento neste ciclo
+                  </p>
+                ) : (
+                  sheetCard.transactions.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {t.category && (
+                          <span className="text-base flex-shrink-0">{t.category.icon}</span>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm truncate">{t.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(t.date)}
+                            {t.category && ` · ${t.category.name}`}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-medium flex-shrink-0 ml-2 ${t.type === "INCOME" ? "text-green-600" : ""}`}>
+                        {t.type === "INCOME" ? "+" : "-"}{formatBRL(t.amount)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
