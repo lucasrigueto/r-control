@@ -19,7 +19,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Header } from "@/components/layout/header";
-import { getBillingCycle, formatCycleLabel } from "@/lib/billing";
+import { formatCycleLabel } from "@/lib/billing";
 
 interface CreditCardData {
   id: string;
