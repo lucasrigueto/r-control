@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, CreditCard as CreditCardIcon, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, CreditCard as CreditCardIcon, ChevronRight, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { Header } from "@/components/layout/header";
 import { formatCycleLabel } from "@/lib/billing";
+import { ImportDialog } from "@/components/cartoes/import-dialog";
 
 interface CreditCardData {
   id: string;
@@ -79,6 +80,10 @@ export default function CartoesPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetLoading, setSheetLoading] = useState(false);
 
+  // Import dialog
+  const [importCard, setImportCard] = useState<{ id: string; name: string } | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+
   async function load() {
     setLoading(true);
     try {
@@ -114,6 +119,11 @@ export default function CartoesPage() {
     });
     setError("");
     setDialogOpen(true);
+  }
+
+  function openImport(card: CreditCardData) {
+    setImportCard({ id: card.id, name: card.name });
+    setImportOpen(true);
   }
 
   async function openDetail(card: CreditCardData) {
@@ -282,15 +292,26 @@ export default function CartoesPage() {
                       )}
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-between text-xs h-8 mt-1"
-                      onClick={() => openDetail(card)}
-                    >
-                      Ver fatura do ciclo
-                      <ChevronRight size={14} />
-                    </Button>
+                    <div className="flex gap-1.5 mt-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-1 justify-between text-xs h-8"
+                        onClick={() => openDetail(card)}
+                      >
+                        Ver fatura
+                        <ChevronRight size={14} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 flex-shrink-0"
+                        title="Importar fatura CSV"
+                        onClick={() => openImport(card)}
+                      >
+                        <Upload size={13} />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -394,6 +415,17 @@ export default function CartoesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Import Dialog */}
+      {importCard && (
+        <ImportDialog
+          cardId={importCard.id}
+          cardName={importCard.name}
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          onImported={() => load()}
+        />
+      )}
 
       {/* Fatura drill-down Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
