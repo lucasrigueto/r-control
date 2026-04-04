@@ -15,7 +15,6 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const fileType = (formData.get("type") as string) ?? "csv";
-    const creditCardId = (formData.get("creditCardId") as string) || null;
 
     if (!file) {
       return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Upload, FileText, CheckCircle2, AlertCircle, ChevronLeft, X, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertCircle, ChevronLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -109,13 +109,10 @@ export function ImportDialog({ open, onClose, onImported, creditCards = [] }: Im
   }, [file, fileType, creditCardId]);
 
   const confirm = useCallback(async () => {
-    const toImport = rows.filter((_, i) => selected.has(i)).map((row, origIdx) => {
-      const idx = rows.indexOf(row);
-      return {
-        ...row,
-        categoryId: editCategory[origIdx] !== undefined ? editCategory[origIdx] : row.categoryId,
-      };
-    });
+    const toImport = rows.filter((_, i) => selected.has(i)).map((row, origIdx) => ({
+      ...row,
+      categoryId: editCategory[origIdx] !== undefined ? editCategory[origIdx] : row.categoryId,
+    }));
 
     if (!toImport.length) {
       setError("Selecione pelo menos uma transação para importar.");
