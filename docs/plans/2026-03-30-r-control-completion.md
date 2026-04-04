@@ -16,6 +16,7 @@
 ---
 
 ## STATUS ATUAL
+> Última atualização: 03/04/2026
 
 | Feature | Status | Notas |
 |---------|--------|-------|
@@ -24,18 +25,20 @@
 | Orçamento | ✅ Completo | por categoria, progress bar |
 | Metas / Vision Board | ✅ Completo | cards com imagem, status |
 | Auth (NextAuth credentials) | ✅ Completo | login, middleware |
-| WhatsApp webhook + Groq AI | ✅ Backend | parsing texto/áudio/imagem funciona |
-| Docker / Coolify | ✅ Completo | Dockerfile multi-stage |
-| WhatsApp Settings UI | ❌ Faltando | backend pronto, falta página |
-| WhatsApp Bot Commands | ❌ Faltando | /saldo, /resumo, consulta conversacional |
-| Import OFX/CSV/PDF | ❌ Faltando | routes existem, sem parser |
-| Cartões de Crédito | ❌ Faltando | modelo, dashboard de fatura, alertas, torneiras |
-| Family / Multi-usuário | ❌ Faltando | schema suporta, sem UI |
-| PWA | ❌ Faltando | manifest + service worker |
-| Settings / Profile | ❌ Faltando | sem páginas |
-| Categorias (UI gestão) | ❌ Faltando | API existe, sem UI |
-| Notificações | ❌ Faltando | infra ready |
-| Payment Gateway | ❌ Faltando | DEFERIDO |
+| WhatsApp webhook + Groq AI | ✅ Completo | parsing texto/áudio/imagem + commands routing |
+| Docker / EasyPanel | ✅ Completo | deploy via GitHub push → EasyPanel redeploy |
+| WhatsApp Settings UI | ✅ Completo | página /whatsapp, cadastro de número, teste de envio |
+| Cartões de Crédito | ✅ Completo | schema, CRUD, dashboard de fatura, drill-down por ciclo, navegação ciclos anteriores |
+| Import CSV (fatura cartão) | ✅ Completo | upload CSV, parser client-side (Nubank/Inter/genérico), preview com categorias, dedup, API POST /api/credit-cards/[id]/import |
+| Settings / Profile | ✅ Completo | página /configuracoes (CRUD categorias), página /perfil (nome, avatar, senha) |
+| Categorias (UI gestão) | ✅ Completo | criar/editar/excluir categorias com ícone, cor e tipo |
+| WhatsApp Bot Intelligence | ❌ Pendente | /saldo, /resumo, /metas, /orcamento, consulta conversacional Groq |
+| Import OFX/PDF + reconciliação | ❌ Pendente | CSV de cartão feito; falta OFX, PDF via Groq, reconciliação mensal |
+| Controle de Dívidas | ❌ Pendente | feature crítica ausente (Fase 2.5) |
+| Family / Multi-usuário (cônjuge) | ❌ Pendente | schema suporta householdId, sem UI de convite |
+| PWA | ❌ Pendente | manifest + ícones + meta tags |
+| Notificações | ❌ Pendente | infra ready, sem implementação |
+| Payment Gateway | ❌ Deferido | fora do escopo atual |
 
 ---
 

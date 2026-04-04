@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,12 +13,15 @@ import {
 import { Header } from "@/components/layout/header";
 import { TransactionTable } from "@/components/transactions/transaction-table";
 import { TransactionForm } from "@/components/transactions/transaction-form";
+import { ImportDialog } from "@/components/transactions/ImportDialog";
 import type { Transaction } from "@/types";
 
 const MONTHS = [
   "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
   "Jul", "Ago", "Set", "Out", "Nov", "Dez",
 ];
+
+interface CreditCard { id: string; name: string; }
 
 export default function TransacoesPage() {
   const now = new Date();
@@ -28,6 +31,8 @@ export default function TransacoesPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
 
   const load = useCallback(async () => {
     const params = new URLSearchParams({ month, year, type });
@@ -39,6 +44,13 @@ export default function TransacoesPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    fetch("/api/credit-cards")
+      .then((r) => r.json())
+      .then((data) => Array.isArray(data) ? setCreditCards(data) : null)
+      .catch(() => null);
+  }, []);
 
   async function handleDelete(id: string) {
     if (!confirm("Excluir esta transação?")) return;
@@ -97,10 +109,16 @@ export default function TransacoesPage() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={handleNew}>
-            <Plus size={16} className="mr-2" />
-            Nova Transação
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload size={16} className="mr-2" />
+              Importar
+            </Button>
+            <Button onClick={handleNew}>
+              <Plus size={16} className="mr-2" />
+              Nova Transação
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -117,6 +135,13 @@ export default function TransacoesPage() {
         onClose={() => setFormOpen(false)}
         onSaved={load}
         transaction={editing}
+      />
+
+      <ImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={load}
+        creditCards={creditCards}
       />
     </div>
   );

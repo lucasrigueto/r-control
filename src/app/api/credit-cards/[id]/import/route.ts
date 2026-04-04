@@ -39,7 +39,7 @@ export async function POST(
 
     const exists = await prisma.transaction.findFirst({
       where: {
-        creditCardId: params.id,
+        creditCard: { id: params.id },
         userId: session.user.id,
         description: tx.description.trim(),
         amount: tx.amount,
@@ -59,9 +59,9 @@ export async function POST(
         date,
         status: "PENDING",
         source: "import",
-        creditCardId: params.id,
-        userId: session.user.id,
-        ...(tx.categoryId ? { categoryId: tx.categoryId } : {}),
+        creditCard: { connect: { id: params.id } },
+        user: { connect: { id: session.user.id } },
+        ...(tx.categoryId ? { category: { connect: { id: tx.categoryId } } } : {}),
       },
     });
     created++;

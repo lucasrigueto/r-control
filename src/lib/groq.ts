@@ -72,6 +72,68 @@ export async function transcribeAudio(
   }
 }
 
+// ── Conversational financial query ───────────────────────────────────────────
+
+interface QueryContext {
+  monthIncome: number;
+  monthExpense: number;
+  month: string;
+  topCategories: Array<{ name: string; icon: string; total: number }>;
+  recentTx: Array<{ description: string; amount: number; type: string; date: string }>;
+}
+
+export async function handleFinancialQuery(
+  text: string,
+  context: QueryContext
+): Promise<string | null> {
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+  const balance = context.monthIncome - context.monthExpense;
+
+  const ctx = [
+    `Mês: ${context.month}`,
+    `Receitas: ${fmt(context.monthIncome)}`,
+    `Despesas: ${fmt(context.monthExpense)}`,
+    `Saldo: ${fmt(balance)}`,
+    `Top gastos: ${context.topCategories.map((c) => `${c.icon} ${c.name}: ${fmt(c.total)}`).join(", ")}`,
+    `Recentes: ${context.recentTx.map((t) => `${t.description} (${fmt(t.amount)}, ${t.type === "INCOME" ? "receita" : "despesa"}, ${t.date})`).join("; ")}`,
+  ].join("\n");
+
+  try {
+    const completion = await getGroq().chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [
+        {
+          role: "system",
+          content: `Você é um assistente financeiro pessoal respondendo via WhatsApp.
+Use os dados abaixo para responder perguntas do usuário de forma concisa.
+
+DADOS:
+${ctx}
+
+REGRAS:
+- Máximo 6 linhas
+- Use emojis relevantes
+- Formate valores em BRL
+- Se a mensagem NÃO for uma pergunta financeira, retorne exatamente: {"not_financial":true}
+- Se faltar dados, diga claramente`,
+        },
+        { role: "user", content: text },
+      ],
+      temperature: 0.2,
+      max_tokens: 300,
+    });
+
+    const content = completion.choices[0].message.content?.trim() ?? "";
+    if (content.includes('"not_financial"')) return null;
+    return content || null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Receipt image analysis ────────────────────────────────────────────────────
+
 export async function analyzeReceiptImage(
   imageBase64: string,
   mimeType: string = "image/jpeg"
